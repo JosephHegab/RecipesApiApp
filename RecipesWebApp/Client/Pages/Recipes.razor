@@ -1,0 +1,50 @@
+﻿@page "/recipes"
+@inject IRecipeService RecipeService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Recipes</PageTitle>
+
+<h3>Recipes</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Recipe name</th>
+            <th>Recipe description</th>
+    
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var recipe in RecipeService.Recipes)
+        {
+            <tr>
+
+                <td>@recipe.RecipeName</td>
+                <td>@recipe.RecipeDescription</td>
+     
+                <td>
+                    <button class="btn btn-primary" @onclick="(() => ShowRecipe(recipe.Id))"><i class="oi oi-pencil"></i></button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<button class="btn btn-primary" @onclick="CreateRecipe">Create New Recipe</button>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await RecipeService.GetRecipes();
+    }
+
+    void ShowRecipe(int id)
+    {
+        NavigationManager.NavigateTo($"recipe/{id}");
+    }
+
+    void CreateRecipe()
+    {
+        NavigationManager.NavigateTo($"/recipe");
+    }
+}

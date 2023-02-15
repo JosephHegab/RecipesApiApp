@@ -1,0 +1,88 @@
+﻿@page "/recipe"
+@page "/recipe/{id:int}"
+@using RecipesWebApp.Shared;
+@inject IRecipeService RecipeService
+
+
+@if(Id == null)
+{
+    <PageTitle>Create a new Recipe</PageTitle>
+    <h3>Create a new Recipe</h3>
+}
+else
+{
+       <PageTitle>Edit @recipe.RecipeName</PageTitle>
+    <h3>Edit @recipe.RecipeName</h3>
+}
+
+<EditForm Model="recipe" OnSubmit="HandleSubmit">
+
+    <div>
+    <label for="RecipeName">Recipe Name</label>
+        <InputText id="recipename" @bind-Value="recipe.RecipeName" class="form-control"></InputText>
+    </div>
+    <div>
+        <label for="RecipeDescription">Recipe Description</label>
+        <InputText id="RecipeDescription" @bind-Value="recipe.RecipeDescription" class="form-control"></InputText>
+    </div>
+    <div>
+        <label>Recipe Categories</label><br />
+        <InputSelect @bind-Value="recipe.RecipeCategoriesId" class="form-select">
+        @foreach (var categories in RecipeService.RecipeCategories)
+        {
+           <option value="@categories.Id">@categories.Name</option>
+        }
+        </InputSelect>
+    </div>
+    <br />
+    <button type="submit" class="btn btn-primary">@btnText</button>
+    <button type="button" class="btn btn-danger" @onclick="DeleteRecipe">Delete Recipe</button>
+
+</EditForm>
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+
+    string btnText = string.Empty;
+
+    RecipeModel recipe = new RecipeModel { RecipeCategories = new RecipeCategoriesModel() };
+
+    protected override async Task OnInitializedAsync()
+    {
+        btnText = Id == null ? "Save New Recipe" : "Update Recipe";
+        await RecipeService.GetRecipeCategories();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if(Id == null)
+        {
+            recipe.RecipeCategories = RecipeService.RecipeCategories[0];
+            recipe.RecipeCategoriesId = recipe.RecipeCategories.Id;
+
+        }
+        else
+        {
+            recipe = await RecipeService.GetSingleRecipe((int)Id);
+        }
+    }
+
+    async Task HandleSubmit()
+    {
+        if(Id == null)
+        {
+            await RecipeService.CreateRecipe(recipe);
+        }
+        else
+        {
+            await RecipeService.UpdateRecipe(recipe);
+        }
+    }
+
+    async Task DeleteRecipe()
+    {
+        await RecipeService.DeleteRecipe(recipe.Id);
+    }
+
+}
